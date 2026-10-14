@@ -4,8 +4,8 @@ set -euo pipefail
 PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
 BUILD_DIR="${PROJECT_DIR}/build"
 DMG_STAGING="${BUILD_DIR}/dmg_staging"
-DMG_OUTPUT="${BUILD_DIR}/DDRevoke_v1.0.3.dmg"
-VOL_NAME="钉钉防撤回_DDRevoke_v1.0.3"
+DMG_OUTPUT="${BUILD_DIR}/DDRevoke_v1.0.4.dmg"
+VOL_NAME="钉钉防撤回_DDRevoke_v1.0.4"
 
 echo "[*] Step 1: Compiling and verifying libDDRevoke.dylib..."
 make -C "${PROJECT_DIR}" clean
@@ -33,7 +33,7 @@ DYLIB_SRC="${DIR}/${DYLIB_NAME}"
 DYLIB_DEST="${TARGET_APP}/Contents/MacOS/${DYLIB_NAME}"
 
 echo "=========================================================="
-echo "          钉钉防撤回补丁一键安装器 (DDRevoke v1.0.3)"
+echo "          钉钉防撤回补丁一键安装器 (DDRevoke v1.0.4)"
 echo "=========================================================="
 echo ""
 
@@ -161,7 +161,7 @@ chmod 755 "${DMG_STAGING}/一键卸载 (双击运行).command"
 
 cat << 'EOF' > "${DMG_STAGING}/使用说明.txt"
 ================================================================================
-                    钉钉防撤回插件 (DDRevoke v1.0.3)
+                    钉钉防撤回插件 (DDRevoke v1.0.4)
 ================================================================================
 
 【功能亮点】

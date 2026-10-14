@@ -648,7 +648,7 @@ static void MarkRecalledMessage(void *msg_ptr, int64_t mid) {
 struct DDRevokeConfig {
     bool enabled = true;
     bool attach_emotion = true;
-    std::string emotion_name = "[思考]"; // Default: 🤔 思考
+    std::string emotion_name = "emotion_078"; // Default: 🤔 思考 (emotion_078)
     bool play_sound = true;
     bool show_notification = true;
     std::string update_url = "https://raw.githubusercontent.com/kts-kris/DDrevoke/main/version.json";
@@ -678,21 +678,17 @@ static void LoadConfig() {
             if (dict[@"attach_emotion"]) g_config.attach_emotion = [dict[@"attach_emotion"] boolValue];
             if (dict[@"emotion_name"] && [dict[@"emotion_name"] isKindOfClass:[NSString class]]) {
                 NSString *rawEmotion = dict[@"emotion_name"];
-                if ([rawEmotion hasPrefix:@"emotion_"]) {
-                    if ([rawEmotion isEqualToString:@"emotion_019"]) g_config.emotion_name = "[嘘]";
-                    else if ([rawEmotion isEqualToString:@"emotion_033"]) g_config.emotion_name = "[吃瓜]";
-                    else if ([rawEmotion isEqualToString:@"emotion_041"]) g_config.emotion_name = "[捂脸哭]";
-                    else if ([rawEmotion isEqualToString:@"emotion_001"]) g_config.emotion_name = "[赞]";
-                    else if ([rawEmotion isEqualToString:@"emotion_021"]) g_config.emotion_name = "[OK]";
-                    else if ([rawEmotion isEqualToString:@"emotion_003"]) g_config.emotion_name = "[鼓掌]";
-                    else if ([rawEmotion isEqualToString:@"emotion_006"]) g_config.emotion_name = "[笑哭]";
-                    else if ([rawEmotion isEqualToString:@"emotion_012"]) g_config.emotion_name = "[大哭]";
-                    else g_config.emotion_name = "[思考]";
-                    DDLog("[CONFIG] Migrated legacy emotion_name '%s' to '%s'",
-                          [rawEmotion UTF8String], g_config.emotion_name.c_str());
-                } else {
-                    g_config.emotion_name = [rawEmotion UTF8String];
-                }
+                if ([rawEmotion isEqualToString:@"[思考]"] || [rawEmotion isEqualToString:@"思考"]) g_config.emotion_name = "emotion_078";
+                else if ([rawEmotion isEqualToString:@"[赞]"] || [rawEmotion isEqualToString:@"赞"] || [rawEmotion isEqualToString:@"点赞"]) g_config.emotion_name = "emotion_001";
+                else if ([rawEmotion isEqualToString:@"[OK]"] || [rawEmotion isEqualToString:@"OK"] || [rawEmotion isEqualToString:@"收到"]) g_config.emotion_name = "emotion_023";
+                else if ([rawEmotion isEqualToString:@"[鼓掌]"] || [rawEmotion isEqualToString:@"鼓掌"]) g_config.emotion_name = "emotion_003";
+                else if ([rawEmotion isEqualToString:@"[笑哭]"] || [rawEmotion isEqualToString:@"笑哭"]) g_config.emotion_name = "emotion_006";
+                else if ([rawEmotion isEqualToString:@"[大哭]"] || [rawEmotion isEqualToString:@"大哭"]) g_config.emotion_name = "emotion_012";
+                else if ([rawEmotion isEqualToString:@"[嘘]"] || [rawEmotion isEqualToString:@"嘘"]) g_config.emotion_name = "emotion_019";
+                else if ([rawEmotion isEqualToString:@"[吃瓜]"] || [rawEmotion isEqualToString:@"吃瓜"]) g_config.emotion_name = "emotion_033";
+                else if ([rawEmotion isEqualToString:@"[捂脸哭]"] || [rawEmotion isEqualToString:@"捂脸哭"]) g_config.emotion_name = "emotion_041";
+                else if ([rawEmotion hasPrefix:@"emotion_"]) g_config.emotion_name = [rawEmotion UTF8String];
+                else g_config.emotion_name = "emotion_078";
             }
             if (dict[@"play_sound"]) g_config.play_sound = [dict[@"play_sound"] boolValue];
             if (dict[@"show_notification"]) g_config.show_notification = [dict[@"show_notification"] boolValue];
@@ -857,17 +853,27 @@ static void AttachEmotionToRecalledMessage(const char *cid, int64_t sender_uid, 
     NSString *emotionNameStr = [NSString stringWithUTF8String:emotion_name.c_str()];
     if (!cidStr || !emotionNameStr || [emotionNameStr length] == 0) return;
 
-    // Normalize emotion to DingTalk standard bracketed key [xxx]
-    if ([emotionNameStr hasPrefix:@"emotion_"]) {
-        emotionNameStr = @"[思考]";
-    } else if (![emotionNameStr hasPrefix:@"["] || ![emotionNameStr hasSuffix:@"]"]) {
-        Class utilCls = objc_getClass("DTIMConvTopicUtil");
-        SEL keySel = sel_registerName("keyForEmotionName:");
-        if (utilCls && [utilCls respondsToSelector:keySel]) {
-            emotionNameStr = ((id (*)(id, SEL, id))objc_msgSend)((id)utilCls, keySel, emotionNameStr);
-        } else {
-            emotionNameStr = [NSString stringWithFormat:@"[%@]", emotionNameStr];
-        }
+    // Normalize emotion to DingTalk standard internal emotion_xxx key
+    if ([emotionNameStr isEqualToString:@"[思考]"] || [emotionNameStr isEqualToString:@"思考"]) {
+        emotionNameStr = @"emotion_078";
+    } else if ([emotionNameStr isEqualToString:@"[赞]"] || [emotionNameStr isEqualToString:@"赞"] || [emotionNameStr isEqualToString:@"点赞"]) {
+        emotionNameStr = @"emotion_001";
+    } else if ([emotionNameStr isEqualToString:@"[OK]"] || [emotionNameStr isEqualToString:@"OK"] || [emotionNameStr isEqualToString:@"收到"]) {
+        emotionNameStr = @"emotion_023";
+    } else if ([emotionNameStr isEqualToString:@"[鼓掌]"] || [emotionNameStr isEqualToString:@"鼓掌"]) {
+        emotionNameStr = @"emotion_003";
+    } else if ([emotionNameStr isEqualToString:@"[笑哭]"] || [emotionNameStr isEqualToString:@"笑哭"]) {
+        emotionNameStr = @"emotion_006";
+    } else if ([emotionNameStr isEqualToString:@"[大哭]"] || [emotionNameStr isEqualToString:@"大哭"]) {
+        emotionNameStr = @"emotion_012";
+    } else if ([emotionNameStr isEqualToString:@"[嘘]"] || [emotionNameStr isEqualToString:@"嘘"]) {
+        emotionNameStr = @"emotion_019";
+    } else if ([emotionNameStr isEqualToString:@"[吃瓜]"] || [emotionNameStr isEqualToString:@"吃瓜"]) {
+        emotionNameStr = @"emotion_033";
+    } else if ([emotionNameStr isEqualToString:@"[捂脸哭]"] || [emotionNameStr isEqualToString:@"捂脸哭"]) {
+        emotionNameStr = @"emotion_041";
+    } else if (![emotionNameStr hasPrefix:@"emotion_"]) {
+        emotionNameStr = @"emotion_078";
     }
 
     // Delay 150ms to allow DingTalk's SQLite DB and in-memory cache commit to settle
@@ -1050,22 +1056,170 @@ static void Swizzled_recallYunpanMsg(id self, SEL _cmd, NSString *cid, int64_t m
     }
 }
 
+// --- Hook F: Emotion Reply UI Rendering Rescue (DTIMMessageEmotionReplyEmojiCell) ---
+// Guarantees that the grey reaction capsule [ 🏷️ | Sender ] never renders with a blank/missing icon.
+static NSImage *GetEmotionImageForName(const char *name_cstr) {
+    if (!name_cstr || name_cstr[0] == '\0') return nil;
+    NSString *name = [NSString stringWithUTF8String:name_cstr];
+    if (!name || [name length] == 0) return nil;
+
+    NSString *filename = nil;
+    if ([name hasPrefix:@"emotion_"]) {
+        filename = [name stringByAppendingPathExtension:@"png"];
+    } else {
+        NSString *clean = name;
+        if ([clean hasPrefix:@"["] && [clean hasSuffix:@"]"]) {
+            clean = [clean substringWithRange:NSMakeRange(1, [clean length] - 2)];
+        }
+        if ([clean isEqualToString:@"思考"] || [clean isEqualToString:@"hmm"]) {
+            filename = @"emotion_078.png";
+        } else if ([clean isEqualToString:@"赞"] || [clean isEqualToString:@"点赞"] || [clean isEqualToString:@"like"]) {
+            filename = @"emotion_001.png";
+        } else if ([clean isEqualToString:@"OK"] || [clean isEqualToString:@"ok"] || [clean isEqualToString:@"收到"]) {
+            filename = @"emotion_023.png";
+        } else if ([clean isEqualToString:@"鼓掌"] || [clean isEqualToString:@"clap"]) {
+            filename = @"emotion_003.png";
+        } else if ([clean isEqualToString:@"笑哭"] || [clean isEqualToString:@"laughandcry"]) {
+            filename = @"emotion_006.png";
+        } else if ([clean isEqualToString:@"大哭"] || [clean isEqualToString:@"cry"]) {
+            filename = @"emotion_012.png";
+        } else if ([clean isEqualToString:@"嘘"] || [clean isEqualToString:@"shhh"]) {
+            filename = @"emotion_019.png";
+        } else if ([clean isEqualToString:@"吃瓜"]) {
+            filename = @"emotion_033.png";
+        } else if ([clean isEqualToString:@"捂脸哭"] || [clean isEqualToString:@"facepalm"]) {
+            filename = @"emotion_041.png";
+        } else if ([clean isEqualToString:@"微笑"]) {
+            filename = @"emotion_014.png";
+        }
+    }
+
+    if (filename) {
+        NSString *bundlePath = [[NSBundle mainBundle] bundlePath];
+        if (!bundlePath || [bundlePath length] == 0) {
+            bundlePath = @"/Applications/DingTalk.app";
+        }
+        NSString *fullPath = [bundlePath stringByAppendingPathComponent:[NSString stringWithFormat:@"Contents/Resources/DefaultEmotion/%@", filename]];
+        if ([[NSFileManager defaultManager] fileExistsAtPath:fullPath]) {
+            NSImage *img = [[NSImage alloc] initWithContentsOfFile:fullPath];
+            if (img) return img;
+        }
+    }
+
+    // Dynamic vector emoji fallback
+    NSString *clean = name;
+    if ([clean hasPrefix:@"["] && [clean hasSuffix:@"]"]) {
+        clean = [clean substringWithRange:NSMakeRange(1, [clean length] - 2)];
+    }
+    NSString *emojiChar = @"🤔";
+    if ([clean isEqualToString:@"思考"] || [name containsString:@"078"]) emojiChar = @"🤔";
+    else if ([clean isEqualToString:@"赞"] || [clean isEqualToString:@"点赞"] || [name containsString:@"001"]) emojiChar = @"👍";
+    else if ([clean isEqualToString:@"OK"] || [name containsString:@"023"]) emojiChar = @"👌";
+    else if ([clean isEqualToString:@"鼓掌"] || [name containsString:@"003"]) emojiChar = @"👏";
+    else if ([clean isEqualToString:@"笑哭"] || [name containsString:@"006"]) emojiChar = @"😂";
+    else if ([clean isEqualToString:@"大哭"] || [name containsString:@"012"]) emojiChar = @"😭";
+    else if ([clean isEqualToString:@"嘘"] || [name containsString:@"019"]) emojiChar = @"🤫";
+    else if ([clean isEqualToString:@"吃瓜"] || [name containsString:@"033"]) emojiChar = @"🍉";
+    else if ([clean isEqualToString:@"捂脸哭"] || [name containsString:@"041"]) emojiChar = @"🤦";
+    else if ([clean isEqualToString:@"微笑"] || [name containsString:@"014"]) emojiChar = @"🙂";
+
+    NSSize imgSize = NSMakeSize(18, 18);
+    NSImage *emojiImg = [NSImage imageWithSize:imgSize flipped:NO drawingHandler:^BOOL(NSRect dstRect) {
+        NSDictionary *attrs = @{
+            NSFontAttributeName: [NSFont systemFontOfSize:14]
+        };
+        NSSize strSize = [emojiChar sizeWithAttributes:attrs];
+        NSRect strRect = NSMakeRect((dstRect.size.width - strSize.width) / 2.0,
+                                    (dstRect.size.height - strSize.height) / 2.0,
+                                    strSize.width, strSize.height);
+        [emojiChar drawInRect:strRect withAttributes:attrs];
+        return YES;
+    }];
+    return emojiImg;
+}
+
+using ConfigWithItemFn = void (*)(id, SEL, void *, id);
+static ConfigWithItemFn g_orig_configWithItem_didClicked = nullptr;
+
+static void Swizzled_configWithItem_didClicked(id self, SEL _cmd, void *item, id clickedBlock) {
+    if (g_orig_configWithItem_didClicked) {
+        g_orig_configWithItem_didClicked(self, _cmd, item, clickedBlock);
+    }
+
+    if (!item) return;
+
+    NSImageView *imageView = nil;
+    SEL curSel = sel_registerName("currentEmojiImageView");
+    if ([self respondsToSelector:curSel]) {
+        imageView = ((id (*)(id, SEL))objc_msgSend)(self, curSel);
+    }
+    if (!imageView) {
+        SEL imgSel = sel_registerName("emojiImageView");
+        if ([self respondsToSelector:imgSel]) {
+            imageView = ((id (*)(id, SEL))objc_msgSend)(self, imgSel);
+        }
+    }
+
+    if (imageView && [imageView image] == nil) {
+        char name_buf[256] = {0};
+        ReadCppString(reinterpret_cast<const void *>(reinterpret_cast<uintptr_t>(item) + 0x08), name_buf, sizeof(name_buf));
+
+        char path_buf[1024] = {0};
+        ReadCppString(reinterpret_cast<const void *>(reinterpret_cast<uintptr_t>(item) + 0x20), path_buf, sizeof(path_buf));
+
+        NSImage *rescued = nil;
+        if (path_buf[0] != '\0') {
+            NSString *pathStr = [NSString stringWithUTF8String:path_buf];
+            if ([[NSFileManager defaultManager] fileExistsAtPath:pathStr]) {
+                rescued = [[NSImage alloc] initWithContentsOfFile:pathStr];
+            }
+        }
+
+        if (!rescued) {
+            rescued = GetEmotionImageForName(name_buf);
+        }
+
+        if (rescued) {
+            [imageView setImage:rescued];
+            DDLog("[EMOTION-UI] Successfully rescued blank emotion icon ('%s') in cell %p", name_buf, self);
+        }
+    }
+}
+
+static void InstallEmojiCellSwizzle() {
+    static bool s_swizzled = false;
+    if (s_swizzled) return;
+
+    Class cellCls = objc_getClass("DTIMMessageEmotionReplyEmojiCell");
+    if (!cellCls) return;
+
+    SEL sel = sel_registerName("configWithItem:didClicked:");
+    Method m = class_getInstanceMethod(cellCls, sel);
+    if (m) {
+        g_orig_configWithItem_didClicked = (ConfigWithItemFn)method_setImplementation(m, (IMP)Swizzled_configWithItem_didClicked);
+        s_swizzled = true;
+        DDLog("[HOOK-OK] Swizzled -[DTIMMessageEmotionReplyEmojiCell configWithItem:didClicked:]");
+    }
+}
+
 static void InstallObjCSwizzles() {
     Class cls = objc_getClass("DTMojoMessageService");
-    if (!cls) {
+    if (cls) {
+        Method m1 = class_getInstanceMethod(cls, sel_registerName("recallMessage:mid:completionHandler:"));
+        if (m1) {
+            g_orig_objc_recallMessage = method_setImplementation(m1, (IMP)Swizzled_recallMessage);
+            DDLog("[HOOK-OK] Swizzled -[DTMojoMessageService recallMessage:mid:completionHandler:]");
+        }
+        Method m2 = class_getInstanceMethod(cls, sel_registerName("recallYunpanMsg:mid:completionHandler:"));
+        if (m2) {
+            g_orig_objc_recallYunpanMsg = method_setImplementation(m2, (IMP)Swizzled_recallYunpanMsg);
+            DDLog("[HOOK-OK] Swizzled -[DTMojoMessageService recallYunpanMsg:mid:completionHandler:]");
+        }
+    } else {
         DDLog("[WARN] Objective-C class DTMojoMessageService not found");
-        return;
     }
-    Method m1 = class_getInstanceMethod(cls, sel_registerName("recallMessage:mid:completionHandler:"));
-    if (m1) {
-        g_orig_objc_recallMessage = method_setImplementation(m1, (IMP)Swizzled_recallMessage);
-        DDLog("[HOOK-OK] Swizzled -[DTMojoMessageService recallMessage:mid:completionHandler:]");
-    }
-    Method m2 = class_getInstanceMethod(cls, sel_registerName("recallYunpanMsg:mid:completionHandler:"));
-    if (m2) {
-        g_orig_objc_recallYunpanMsg = method_setImplementation(m2, (IMP)Swizzled_recallYunpanMsg);
-        DDLog("[HOOK-OK] Swizzled -[DTMojoMessageService recallYunpanMsg:mid:completionHandler:]");
-    }
+
+    InstallEmojiCellSwizzle();
 }
 
 // ============================================================================
@@ -1078,15 +1232,15 @@ struct DDRevokeEmotionOption {
 };
 
 static const DDRevokeEmotionOption kEmotionOptions[] = {
-    {"🤔 思考 (推荐)", "[思考]"},
-    {"👍 点赞 (认同)", "[赞]"},
-    {"👌 收到 (OK)", "[OK]"},
-    {"👏 鼓掌 (恭喜)", "[鼓掌]"},
-    {"🤫 嘘 (保持低调)", "[嘘]"},
-    {"🍉 吃瓜 (围观)", "[吃瓜]"},
-    {"🤦 捂脸 (无奈)", "[捂脸哭]"},
-    {"😂 笑哭 (喜极而泣)", "[笑哭]"},
-    {"😭 大哭 (伤心)", "[大哭]"}
+    {"🤔 思考 (推荐)", "emotion_078"},
+    {"👍 点赞 (认同)", "emotion_001"},
+    {"👌 收到 (OK)", "emotion_023"},
+    {"👏 鼓掌 (恭喜)", "emotion_003"},
+    {"🤫 嘘 (保持低调)", "emotion_019"},
+    {"🍉 吃瓜 (围观)", "emotion_033"},
+    {"🤦 捂脸 (无奈)", "emotion_041"},
+    {"😂 笑哭 (喜极而泣)", "emotion_006"},
+    {"😭 大哭 (伤心)", "emotion_012"}
 };
 
 @interface DDRevokeUpdateManager : NSObject
@@ -1140,7 +1294,7 @@ static const DDRevokeEmotionOption kEmotionOptions[] = {
 
     // 1. Header Title
     NSTextField *titleLabel = [[NSTextField alloc] initWithFrame:NSMakeRect(24, 315, 390, 26)];
-    [titleLabel setStringValue:@"🛡️ 钉钉防撤回补丁 (DDRevoke v1.0.3)"];
+    [titleLabel setStringValue:@"🛡️ 钉钉防撤回补丁 (DDRevoke v1.0.4)"];
     [titleLabel setFont:[NSFont boldSystemFontOfSize:15]];
     [titleLabel setBezeled:NO];
     [titleLabel setDrawsBackground:NO];
@@ -1339,7 +1493,7 @@ static const DDRevokeEmotionOption kEmotionOptions[] = {
 // Remote Update Manager (Online Version Check, Download & Zero-Touch Hot Patch)
 // ============================================================================
 
-static NSString *const kCurrentVersion = @"1.0.3";
+static NSString *const kCurrentVersion = @"1.0.4";
 
 @implementation DDRevokeUpdateManager {
     BOOL _isChecking;
@@ -1773,8 +1927,8 @@ static NSString *const kCurrentVersion = @"1.0.3";
 - (void)onAbout:(id)sender {
     (void)sender;
     NSAlert *alert = [[NSAlert alloc] init];
-    [alert setMessageText:@"DDRevoke v1.0.3"];
-    [alert setInformativeText:@"钉钉 macOS 防撤回与自动表情标记补丁\n版本: 1.0.3\n快捷键: ⌘\\ 打开设置窗口\n\n已拦截撤回消息并在原消息气泡下方自动标记表情。\n支持在线一键热更新。"];
+    [alert setMessageText:@"DDRevoke v1.0.4"];
+    [alert setInformativeText:@"钉钉 macOS 防撤回与自动表情标记补丁\n版本: 1.0.4\n快捷键: ⌘\\ 打开设置窗口\n\n已拦截撤回消息并在原消息气泡下方自动标记表情。\n支持在线一键热更新。"];
     [alert addButtonWithTitle:@"确定"];
     [alert runModal];
 }
@@ -1828,7 +1982,7 @@ static void DDRevokeInit() {
              uuid[8], uuid[9], uuid[10], uuid[11], uuid[12], uuid[13], uuid[14], uuid[15]);
 
     DDLog("============================================================");
-    DDLog("DDRevoke v1.0.3 initializing in DingTalk (pid=%d, slide=0x%lx, UUID=%s)",
+    DDLog("DDRevoke v1.0.4 initializing in DingTalk (pid=%d, slide=0x%lx, UUID=%s)",
           getpid(), (unsigned long)g_slide, uuid_str);
 
     if (memcmp(uuid, DT901::kExpectedUUID, 16) != 0) {
@@ -1882,6 +2036,7 @@ static void DDRevokeInit() {
             (void)note;
             DDLog("[MENU] NSApplicationDidFinishLaunchingNotification received, installing menu");
             [[DDRevokeMenuManager sharedManager] installMenu];
+            InstallEmojiCellSwizzle();
         }];
 
         [[NSNotificationCenter defaultCenter] addObserverForName:NSApplicationDidBecomeActiveNotification
@@ -1890,12 +2045,22 @@ static void DDRevokeInit() {
                                                       usingBlock:^(NSNotification * _Nonnull note) {
             (void)note;
             [[DDRevokeMenuManager sharedManager] installMenu];
+            InstallEmojiCellSwizzle();
+        }];
+
+        [[NSNotificationCenter defaultCenter] addObserverForName:NSBundleDidLoadNotification
+                                                          object:nil
+                                                           queue:[NSOperationQueue mainQueue]
+                                                      usingBlock:^(NSNotification * _Nonnull note) {
+            (void)note;
+            InstallEmojiCellSwizzle();
         }];
 
         // Schedule delayed fallback installation triggers (300ms, 1000ms, 2500ms, 5000ms)
         for (int delay_ms : {300, 1000, 2500, 5000}) {
             dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(delay_ms * NSEC_PER_MSEC)), dispatch_get_main_queue(), ^{
                 [[DDRevokeMenuManager sharedManager] installMenu];
+                InstallEmojiCellSwizzle();
             });
         }
 
@@ -1905,5 +2070,5 @@ static void DDRevokeInit() {
         });
     });
 
-    DDLog("DDRevoke v1.0.3 initialization complete. Log file: /tmp/ddrevoke.log");
+    DDLog("DDRevoke v1.0.4 initialization complete. Log file: /tmp/ddrevoke.log");
 }
