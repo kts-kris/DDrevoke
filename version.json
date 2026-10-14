@@ -1,0 +1,10 @@
+{
+  "version": "1.0.3",
+  "build": 103,
+  "releaseDate": "2026-10-14",
+  "title": "DDRevoke v1.0.3 正式版",
+  "changeLog": "1. 新增在线远程检查更新功能：在【🛡️ 防撤回】菜单及设置面板中一键检查新版本，支持在线热更新秒级替换\n2. 彻底解决升级后系统权限（麦克风/摄像头/通知等）丢失问题：引入权限元数据持久化与热替换机制，升级完全不改动主程序二进制\n3. 修复撤回消息表情标记空白问题，全面对齐钉钉官方表情 Key",
+  "downloadUrl": "https://github.com/kts-kris/DDrevoke/releases/download/v1.0.3/libDDRevoke.dylib",
+  "dmgUrl": "https://github.com/kts-kris/DDrevoke/releases/download/v1.0.3/DDRevoke_v1.0.3.dmg",
+  "minDingTalkVersion": "9.0.0"
+}

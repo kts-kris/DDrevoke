@@ -1,0 +1,10 @@
+# Build staging and package artifacts
+build/dmg_staging/
+build/*.dmg
+build/*.dSYM/
+
+# System and editor files
+.DS_Store
+dns_cache_file
+*.swp
+*~
